@@ -2,17 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hangman Game</title>
+    <title>Welcome to hangman</title>
 </head>
 <body>
-    <h1>Welcome to Hangman!</h1>
-    <p>Click the button below to start playing:</p>
-    <form action="/play" method="post">
-        <input type="hidden" name="word" value="{{ word }}">
-        <input type="hidden" name="word_completion" value="{{ word_completion }}">
-        <input type="hidden" name="tries" value="6">
-        <button type="submit">Play</button>
-    </form>
+    <h1>Welcome to hangman</h1>
+    <a href="/play">Play now</a>
 </body>
-</html>
+
