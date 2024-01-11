@@ -3,7 +3,8 @@ import random
 app = Flask(__name__)
 app.secret_key = "super secret key"
 
-words = ["APPLE", "BANANA", "CHERRY", "ORANGE", "GRAPE", "PEAR"] 
+words = open("words.txt").readlines()
+words = [word.strip().upper() for word in words]
 
 def display_hangman(tries):
     stages = [
@@ -170,3 +171,5 @@ def play():
         session["display_word"] = get_display_word(session["word"], session["guessed_letters"])
         return render_play("Welcome to Hangman! Guess a letter or the whole word.", {})
 
+if __name__ == "__main__":
+    app.run(debug=True, use_reloader=False)
