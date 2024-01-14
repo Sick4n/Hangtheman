@@ -1,175 +1,81 @@
-from flask import Flask, render_template, request, session
-import random
+# app.py
+from flask import Flask, render_template
+from flask_sockets import Sockets
+import pty
+import os
+import fcntl
+import struct
+import subprocess
+import threading
+import queue
+
 app = Flask(__name__)
-app.secret_key = "super secret key"
+sockets = Sockets(app)
 
-words = open("words.txt").readlines()
-words = [word.strip().upper() for word in words]
+# Initialize the hangman.py process
+master_fd, slave_fd = pty.openpty()
+process = subprocess.Popen(
+    ['python3', 'hangman.py'],
+    stdin=slave_fd,
+    stdout=slave_fd,
+    stderr=subprocess.STDOUT,
+    text=True,
+    bufsize=1,
+    universal_newlines=True
+)
 
-def display_hangman(tries):
-    stages = [
-     '''
-           --------
-           |      |
-           |      O
-           |     \\|/
-           |      |
-           |     / \\
-           -
-        ''',
-        # head, torso, both arms, and one leg
-        '''
-           --------
-           |      |
-           |      O
-           |     \\|/
-           |      |
-           |     / 
-           -
-        ''',
-        # head, torso, and both arms
-        '''
-           --------
-           |      |
-           |      O
-           |     \\|/
-           |      |
-           |      
-           -
-        ''',
-        # head, torso, and one arm
-        '''
-           --------
-           |      |
-           |      O
-           |     \\|
-           |      |
-           |     
-           -
-        ''',
-        # head and torso
-        '''
-           --------
-           |      |
-           |      O
-           |      |
-           |      |
-           |     
-           -
-        ''',
-        # head
-        '''
-           --------
-           |      |
-           |      O
-           |    
-           |      
-           |     
-           -
-        ''',
-        # initial empty state
-        '''
-           --------
-           |      |
-           |      
-           |    
-           |      
-           |     
-           -
-        '''
-    ]
-    return stages[tries]
+# Set the non-blocking mode on the master FD
+fcntl.fcntl(master_fd, fcntl.F_SETFL, os.O_NONBLOCK)
 
+# Create a queue to store user input
+input_queue = queue.Queue()
 
-def get_display_word(word, guessed_letters):
-    display_word = ""
-    for letter in word:
-        if letter in guessed_letters:
-            display_word += letter + " "
-        else:
-            display_word += "_ "
-    return display_word
+# Function to read Hangman process output and send it to WebSocket
+def read_process_output(ws):
+    while True:
+        try:
+            output = os.read(master_fd, 4096).decode()
+        except BlockingIOError:
+            output = ""
 
-def has_guessed_all_letters(word, guessed_letters):
-    for letter in word:
-        if letter not in guessed_letters:
-            return False
-    return True
+        if not output and process.poll() is not None:
+            break
 
-def render_play(message, additional_context):
-    context = {
-        "message": message,
-        "guessed_letters": session["guessed_letters"],
-        "guessed_words": session["guessed_words"],
-        "display_word": session["display_word"],
-        "hangman": display_hangman(session["lives"])
-        }
-    context.update(additional_context)
-    return render_template("play.html", **context)
+        for line in output.splitlines():
+            ws.send(line + '\n')
 
-@app.errorhandler(404)
-def not_found_error(error):
-    return render_template('404.html'), 404
+# WebSocket route
+@sockets.route('/ws')
+def ws(ws):
+    # Start a thread to continuously read and send Hangman output
+    output_thread = threading.Thread(target=read_process_output, args=(ws,))
+    output_thread.daemon = True
+    output_thread.start()
 
-@app.errorhandler(Exception)
-def internal_error(error):
-    # Log the error
-    app.logger.error('Server Error: %s', (error))
-    # Return a generic error message
-    return "An internal error occurred. Please try again later.", 500
+    # Handle incoming WebSocket messages
+    while not ws.closed:
+        user_input = ws.receive()
+        if user_input:
+            input_queue.put(user_input)
 
-@app.route("/")
+# Function to send user input to Hangman process
+def send_user_input():
+    while True:
+        user_input = input_queue.get()
+        os.write(master_fd, (user_input + '\n').encode())
+
+# Start a thread to handle user input
+input_thread = threading.Thread(target=send_user_input)
+input_thread.daemon = True
+input_thread.start()
+
+@app.route('/')
 def index():
-    return render_template("index.html")
+    return render_template('terminal.html')
 
-@app.route("/play", methods=["GET", "POST"])
-def play():
-    if request.method == "POST":
-        guess = request.form["guess"]
-        guess = guess.upper()
-        message = ""
-        if guess in session["guessed_letters"] or guess in session["guessed_words"]:
-            message = f"You already guessed {guess}!"
-            return render_play(message, {})
+if __name__ == '__main__':
+    from gevent import pywsgi
+    from geventwebsocket.handler import WebSocketHandler
+    server = pywsgi.WSGIServer(('0.0.0.0', 5000), app, handler_class=WebSocketHandler)
+    server.serve_forever()
 
-        if len(guess) == 1 and guess.isalpha():
-            session["guessed_letters"].append(guess)
-            session["display_word"] = get_display_word(session["word"], session["guessed_letters"])
-            if guess in session["word"]:
-                if has_guessed_all_letters(session["word"], session["guessed_letters"]):
-                    return render_template("win.html", word=session["word"])
-                message = f"{guess} is in the word!"
-            else:
-                message= f"{guess} is not in the word!"
-                session["lives"] -= 1
-
-        elif len(guess) == len(session["word"]) and guess.isalpha():
-            session["guessed_words"].append(guess)
-            if guess == session["word"]:
-                return render_template("win.html", word=session["word"])
-            else:
-                message = f"{guess} is not the word!"
-                session["lives"] -= 1
-                
-        elif guess.isalpha() == False:
-            message = "That is not a valid letter or word."
-            
-        elif len(guess) != 1 and len(guess) != len(session["word"]):
-            message = "The guess must be one letter or the same length as the word."
-
-        if session["lives"] == 0:
-            return render_template("lose.html", word=session["word"])
-
-        return render_play(message, {})
-
-
-    elif request.method == "GET":
-        session["word"] = random.choice(words)
-        session["guessed_letters"] = []
-        session["guessed_words"] = []
-        session["lives"] = 6
-        session["display_word"] = get_display_word(session["word"], session["guessed_letters"])
-        return render_play("Welcome to Hangman! Guess a letter or the whole word.", {})
-
-if __name__ == "__main__":
-    app.run(debug=True, use_reloader=False)

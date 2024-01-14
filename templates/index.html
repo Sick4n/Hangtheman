@@ -1,11 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
-    <meta charset="UTF-8">
-    <title>Welcome to hangman</title>
+    <title>Python Terminal in Browser</title>
+    <script src="https://cdn.socket.io/socket.io-3.1.3.min.js"></script>
+    <script type="text/javascript">
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+        socket.on('code_output', function (msg) {
+            document.getElementById('output').textContent += '\n' + msg;
+        });
+
+        function sendCode() {
+            var code = document.getElementById('code').value;
+            socket.emit('execute_code', code);
+        }
+    </script>
 </head>
+
 <body>
-    <h1>Welcome to hangman</h1>
-    <a href="/play">Play now</a>
+    <textarea id="code"></textarea>
+    <button onclick="sendCode()">Run Code</button>
+    <pre id="output"></pre>
 </body>
 
+</html>
