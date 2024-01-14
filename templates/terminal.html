@@ -59,13 +59,12 @@
         }
     </style>
 </head>
-
 <body>
     <h1>Terminal Emulator</h1>
     <div id="terminal"></div>
     <form id="command-form">
-        <input type="text" id="command-input" placeholder="Enter a command" autofocus disabled>
-        <button type="submit" id="execute-button" disabled>Execute</button>
+        <input type="text" id="command-input" placeholder="Enter a command" autofocus>
+        <button type="submit" id="execute-button">Execute</button>
     </form>
 
     <script>
@@ -73,33 +72,44 @@
         const commandForm = document.getElementById('command-form');
         const commandInput = document.getElementById('command-input');
         const executeButton = document.getElementById('execute-button');
-        const protocol = (window.location.protocol === 'https:') ? 'wss://' : 'ws://';
-        const socket = new WebSocket(protocol + window.location.host + '/ws');
 
-        socket.onopen = function (event) {
-            commandInput.disabled = false;
-            executeButton.disabled = false;
-        };
-
-        socket.onmessage = function (event) {
-            const output = event.data;
-            terminal.textContent += output;
-            terminal.scrollTop = terminal.scrollHeight;
-        };
-
-        socket.onerror = function (event) {
-            console.error('WebSocket error:', event);
-        };
-
-        commandForm.addEventListener('submit', function (event) {
+        commandForm.addEventListener('submit', function(event) {
             event.preventDefault();
             const input = commandInput.value;
-            socket.send(input);
+            sendCommand(input);
             commandInput.value = '';
             terminal.textContent += `$ ${input}\n`;
-            terminal.scrollTop = terminal.scrollHeight;
         });
+
+        function sendCommand(command) {
+            fetch('/send_command', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ command: command }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    getOutput();
+                }
+            });
+        }
+
+        function getOutput() {
+            fetch('/get_output')
+            .then(response => response.json())
+            .then(data => {
+                data.outputs.forEach(output => {
+                    terminal.textContent += `${output}\n`;
+                });
+                terminal.scrollTop = terminal.scrollHeight;
+            });
+        }
+
+        setInterval(getOutput, 1000); // Polling every 1 second to get new output
     </script>
 </body>
-
 </html>
+
