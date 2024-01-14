@@ -1,4 +1,5 @@
 import random
+from sys import stdin, stdout
 
 def load_words():
     with open("words.txt") as file:
@@ -108,9 +109,9 @@ def main():
         print("Guessed Letters: ", " ".join(guessed_letters))
         print("Guessed Words: ", " ".join(guessed_words))
         print("Word: ", get_display_word(word, guessed_letters))
-
+        stdout.flush()
         # Take the player's guess
-        guess = input("Guess a letter or the word: ").upper().strip()
+        guess = stdin.readline().strip().upper()
 
         # Check if the guess has already been made
         if guess in guessed_letters or guess in guessed_words:
@@ -148,8 +149,8 @@ def main():
             print("\n" * 30)  # Clear the output again
             print(display_hangman(lives))
             print(f"You ran out of lives. The word was {word}.")
-            while input("write 'restart' to restart the game: ") != "restart":
-                pass
+            print("press any key to play again")
+            stdin.readline().strip().upper()
             main()
 
 if __name__ == "__main__":
