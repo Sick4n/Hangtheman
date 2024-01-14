@@ -1,6 +1,7 @@
 <!-- templates/terminal.html -->
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Terminal Emulator</title>
     <style>
@@ -58,6 +59,7 @@
         }
     </style>
 </head>
+
 <body>
     <h1>Terminal Emulator</h1>
     <div id="terminal"></div>
@@ -71,25 +73,25 @@
         const commandForm = document.getElementById('command-form');
         const commandInput = document.getElementById('command-input');
         const executeButton = document.getElementById('execute-button');
+        const protocol = (window.location.protocol === 'https:') ? 'wss://' : 'ws://';
+        const socket = new WebSocket(protocol + window.location.host + '/ws');
 
-        const socket = new WebSocket('ws://' + window.location.host + '/ws');
-
-        socket.onopen = function(event) {
+        socket.onopen = function (event) {
             commandInput.disabled = false;
             executeButton.disabled = false;
         };
 
-        socket.onmessage = function(event) {
+        socket.onmessage = function (event) {
             const output = event.data;
             terminal.textContent += output;
             terminal.scrollTop = terminal.scrollHeight;
         };
 
-        socket.onerror = function(event) {
+        socket.onerror = function (event) {
             console.error('WebSocket error:', event);
         };
 
-        commandForm.addEventListener('submit', function(event) {
+        commandForm.addEventListener('submit', function (event) {
             event.preventDefault();
             const input = commandInput.value;
             socket.send(input);
@@ -99,5 +101,5 @@
         });
     </script>
 </body>
-</html>
 
+</html>
