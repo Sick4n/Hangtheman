@@ -1,56 +1,171 @@
-from flask import Flask, render_template, request, jsonify
-import subprocess
-import threading
-import queue
-
+from flask import Flask, render_template, jsonify, request, session
+import random
 app = Flask(__name__)
+app.secret_key = "super secret key"
 
-# Initialize the hangman.py process
-process = subprocess.Popen(
-    ['python3', 'hangman.py'],
-    stdin=subprocess.PIPE,
-    stdout=subprocess.PIPE,
-    stderr=subprocess.STDOUT,
-    text=True,
-    bufsize=1,
-    universal_newlines=True
-)
+words = open("words.txt").readlines()
+words = [word.strip().upper() for word in words]
 
-# Create a queue to store process output
-output_queue = queue.Queue()
 
-# Function to read Hangman process output
-def read_process_output():
-    while True:
-        output = process.stdout.readline()
-        if output == '' and process.poll() is not None:
-            break
-        if output:
-            output_queue.put(output.strip())
+def display_hangman(tries):
+    stages = [
+     '''
+           --------
+           |      |
+           |      O
+           |     \\|/
+           |      |
+           |     / \\
+           -
+        ''',
+        # head, torso, both arms, and one leg
+        '''
+           --------
+           |      |
+           |      O
+           |     \\|/
+           |      |
+           |     / 
+           -
+        ''',
+        # head, torso, and both arms
+        '''
+           --------
+           |      |
+           |      O
+           |     \\|/
+           |      |
+           |      
+           -
+        ''',
+        # head, torso, and one arm
+        '''
+           --------
+           |      |
+           |      O
+           |     \\|
+           |      |
+           |     
+           -
+        ''',
+        # head and torso
+        '''
+           --------
+           |      |
+           |      O
+           |      |
+           |      |
+           |     
+           -
+        ''',
+        # head
+        '''
+           --------
+           |      |
+           |      O
+           |    
+           |      
+           |     
+           -
+        ''',
+        # initial empty state
+        '''
+           --------
+           |      |
+           |      
+           |    
+           |      
+           |     
+           -
+        '''
+    ]
+    return stages[tries]
 
-# Start a thread to read output from the Hangman process
-output_thread = threading.Thread(target=read_process_output)
-output_thread.daemon = True
-output_thread.start()
+def get_display_word(word, guessed_letters):
+    display_word = ""
+    for letter in word:
+        if letter in guessed_letters:
+            display_word += letter + " "
+        else:
+            display_word += "_ "
+    return display_word.strip()
 
-@app.route('/')
+def has_guessed_all_letters(word, guessed_letters):
+    return all(letter in guessed_letters for letter in word)
+
+@app.route("/")
 def index():
-    return render_template('terminal.html')
+    return render_template("index.html")
 
-@app.route('/send_command', methods=['POST'])
-def send_command():
-    user_input = request.json.get('command')
-    process.stdin.write(user_input + '\n')
-    process.stdin.flush()
-    return jsonify(success=True)
+@app.route("/guess", methods=["POST"])
+def guess():
+    session.setdefault('guessed_letters', [])
+    session.setdefault('guessed_words', [])
+    session.setdefault('lives', 6)
+    session.setdefault('word', '')
 
-@app.route('/get_output', methods=['GET'])
-def get_output():
-    outputs = []
-    while not output_queue.empty():
-        outputs.append(output_queue.get())
-    return jsonify(outputs=outputs)
+    guess = request.json.get('guess', '').upper()
+    message = ""
 
-if __name__ == '__main__':
-    app.run(debug=True)
+    if len(guess) == 1 and guess.isalpha():
+        if guess in session['guessed_letters']:
+            message = f"You already guessed the letter {guess}!"
+        else:
+            session['guessed_letters'].append(guess)
+            if guess in session['word']:
+                message = f"Good guess! {guess} is in the word!"
+            else:
+                message = f"Sorry, {guess} is not in the word."
+                session['lives'] -= 1
 
+    elif len(guess) == len(session['word']) and guess.isalpha():
+        if guess in session['guessed_words']:
+            message = f"You already guessed the word {guess}!"
+        else:
+            session['guessed_words'].append(guess)
+            if guess == session['word']:
+                return jsonify({"game_over": True, "win": True, "word": session['word'], "message": "Congratulations! You guessed the word!"})
+            else:
+                message = f"Sorry, {guess} is not the word."
+                session['lives'] -= 1
+
+    else:
+        message = "Invalid guess. Try again."
+
+    session['display_word'] = get_display_word(session['word'], session['guessed_letters'])
+    if has_guessed_all_letters(session['word'], session['guessed_letters']):
+        return jsonify({"game_over": True, "win": True, "word": session['word'], "message": "Congratulations! You guessed the word!", "display_word": session['display_word']})
+
+    if session['lives'] <= 0:
+        hangman = display_hangman(session['lives'])
+        return jsonify({"game_over": True, "win": False, "word": session['word'], "message": "You have run out of lives!", "hangman": hangman})
+
+    hangman = display_hangman(session['lives'])
+
+    return jsonify({
+        "message": message,
+        "guessed_letters": session['guessed_letters'],
+        "guessed_words": session['guessed_words'],
+        "display_word": session['display_word'],
+        "hangman": hangman,
+        "game_over": False
+    })
+
+
+@app.route("/restart", methods=["POST"])
+def restart():
+    session['word'] = random.choice(words)
+    session['guessed_letters'] = []
+    session['guessed_words'] = []
+    session['lives'] = 6
+    session['display_word'] = get_display_word(session['word'], session['guessed_letters'])
+    return jsonify({
+        "message": "New game started! Guess a letter or the whole word.",
+        "guessed_letters": session['guessed_letters'],
+        "guessed_words": session["guessed_words"],
+"display_word": session['display_word'],
+"hangman": display_hangman(session['lives'])
+})
+
+if __name__ == "__main__":
+    app.run(debug=True, use_reloader=False)

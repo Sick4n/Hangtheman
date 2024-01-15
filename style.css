@@ -1,0 +1,48 @@
+body {
+    background-color: black;
+    color: #33ff33;
+    font-family: 'Courier New', Courier, monospace;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.terminal {
+    background-color: black;
+    border: 1px solid #33ff33;
+    padding: 20px;
+    width: 80%;
+    max-width: 600px;
+}
+
+input[type="text"] {
+    background-color: #333;
+    color: #33ff33;
+    border: none;
+    padding: 5px;
+    margin: 5px 0;
+}
+
+input[type="submit"] {
+    background-color: #333;
+    color: #33ff33;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+input[type="submit"]:hover {
+    background-color: #222;
+}
+
+pre {
+    white-space: pre-wrap; /* Since CSS 2.1 */
+    white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+    white-space: -pre-wrap; /* Opera 4-6 */
+    white-space: -o-pre-wrap; /* Opera 7 */
+    word-wrap: break-word; /* Internet Explorer 5.5+ */
+}
+
