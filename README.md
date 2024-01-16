@@ -2,7 +2,7 @@
 ## Introduction
 
 Welcome to the Hangman Application, a web-based game designed to provide a fun and interactive way to play the classic game of Hangman. This application is built using Flask, a Python web framework, and is deployed on Render for easy accessibility. The game allows players to guess letters or the word itself, with a visual representation of the hangman as the game progresses.
-
+The game can be played on: https://hangtheman.onrender.com/
 ![New Game](/images/new.png)
 
 ## Contents
