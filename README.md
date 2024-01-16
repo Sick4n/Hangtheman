@@ -19,7 +19,6 @@ Welcome to the Hangman Application, a web-based game designed to provide a fun a
 * Interactive Hangman Display: Visual representation of the hangman that updates with each guess.
 * Guess Tracking: Keeps track of guessed letters and words.
 * Game Over Indication: Informs the player when the game is over, displaying a win or lose message.
-* Responsive Design: The game is designed to work on various devices and screen sizes.
 * New Game Option: Allows players to easily start a new game.
 * Keyboard Accessibility: Supports keyboard input for guessing letters and words.
 
