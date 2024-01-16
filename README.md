@@ -67,5 +67,4 @@ The Hangman Application is deployed on Render, following these steps:
 Special thanks to the following:
 
 * Code Institute: For providing resources and support in the development of this project.
-* TSInfoTechnologies: For guidance on Flask and game logic.
 * Community Support: Fellow developers and mentors who provided feedback and suggestions.
