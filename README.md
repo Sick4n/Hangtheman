@@ -41,7 +41,7 @@ Welcome to the Hangman Application, a web-based game designed to provide a fun a
 * The game ends either when you guess the word correctly or run out of lives.
 * Press any key or click the screen to start a new game.
 
-![Game lost](/images/lose.png)
+![Game lost](/images/incorrect.png)
 
 ## Testing
 
