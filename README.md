@@ -1,31 +1,72 @@
-![CI logo](https://codeinstitute.s3.amazonaws.com/fullstack/ci_logo_small.png)
+# Hangman Application
+## Introduction
 
-Welcome USER_NAME,
+Welcome to the Hangman Application, a web-based game designed to provide a fun and interactive way to play the classic game of Hangman. This application is built using Flask, a Python web framework, and is deployed on Render for easy accessibility. The game allows players to guess letters or the word itself, with a visual representation of the hangman as the game progresses.
 
-This is the Code Institute student template for deploying your third portfolio project, the Python command-line project. The last update to this file was: **August 17, 2021**
+## Contents
 
-## Reminders
+* Introduction
+* Features
+* Technologies Used
+* How to Play
+* Testing
+* Deployment
+* Future Enhancements
+* Acknowledgements
 
-* Your code must be placed in the `run.py` file
-* Your dependencies must be placed in the `requirements.txt` file
-* Do not edit any of the other files or your code may not deploy properly
+## Features
 
-## Creating the Heroku app
+* Interactive Hangman Display: Visual representation of the hangman that updates with each guess.
+* Guess Tracking: Keeps track of guessed letters and words.
+* Game Over Indication: Informs the player when the game is over, displaying a win or lose message.
+* Responsive Design: The game is designed to work on various devices and screen sizes.
+* New Game Option: Allows players to easily start a new game.
+* Keyboard Accessibility: Supports keyboard input for guessing letters and words.
 
-When you create the app, you will need to add two buildpacks from the _Settings_ tab. The ordering is as follows:
+## Technologies Used
 
-1. `heroku/python`
-2. `heroku/nodejs`
+* Flask: A lightweight WSGI web application framework in Python.
+* HTML/CSS: For structuring and styling the web page.
+* JavaScript (jQuery): To make the game interactive and handle user input.
+* Render: A cloud service used for deploying the application.
+* Git and GitHub: For version control and repository hosting.
 
-You must then create a _Config Var_ called `PORT`. Set this to `8000`
+## How to Play
 
-If you have credentials, such as in the Love Sandwiches project, you must create another _Config Var_ called `CREDS` and paste the JSON into the value field.
+* Open the application in a web browser.
+* Guess a letter or the entire word using the input field.
+* The hangman and guessed letters/words will update based on your input.
+* The game ends either when you guess the word correctly or run out of lives.
+* Press any key or click the screen to start a new game.
 
-Connect your GitHub repository and deploy as normal.
+## Testing
 
-## Constraints
+The application has been rigorously tested for functionality and usability. Testing scenarios included:
 
-The deployment terminal is set to 80 columns by 24 rows. That means that each line of text needs to be 80 characters or less otherwise it will be wrapped onto a second line.
+* Guessing correct and incorrect letters.
+* Guessing the complete word correctly and incorrectly.
+* Testing on different browsers and devices.
+* Ensuring the game restarts correctly.
 
------
-Happy coding!
+## Deployment
+
+The Hangman Application is deployed on Render, following these steps:
+
+* Set up a Render account and link it to the GitHub repository.
+* Configure the Render settings to match the application requirements.
+* Deploy the application, making it accessible via a public URL.
+
+## Future Enhancements
+
+* Difficulty Levels: Introducing various difficulty levels to cater to a wider range of players.
+* Leaderboard: Implementing a leaderboard to track high scores and encourage competition.
+* Word Categories: Adding different categories of words for players to choose from.
+* Multiplayer Mode: Enabling multiple players to play against each other.
+
+## Acknowledgements
+
+Special thanks to the following:
+
+* Code Institute: For providing resources and support in the development of this project.
+* TSInfoTechnologies: For guidance on Flask and game logic.
+* Community Support: Fellow developers and mentors who provided feedback and suggestions.
