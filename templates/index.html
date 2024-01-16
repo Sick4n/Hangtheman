@@ -20,147 +20,151 @@
             <input type="text" name="guess" autofocus>
         </form>
     </div>
-<script>
-    let isGameOver = false;
+    <script>
+        let isGameOver = false;
 
-    function updateUI(data) {
-        $('#hangmanDisplay').text(data.hangman);
-        $('#messageDisplay').text(data.message);
-        $('#wordDisplay').text(data.display_word);
-        $('#guessedLettersDisplay').text(data.guessed_letters ? data.guessed_letters.join(', ') : '');
-        $('#guessedWordsDisplay').text(data.guessed_words ? data.guessed_words.join(', ') : '');
+        function updateUI(data) {
+            $('#hangmanDisplay').text(data.hangman);
+            $('#messageDisplay').text(data.message);
+            $('#wordDisplay').text(data.display_word);
+            $('#guessedLettersDisplay').text(data.guessed_letters ? data.guessed_letters.join(', ') : '');
+            $('#guessedWordsDisplay').text(data.guessed_words ? data.guessed_words.join(', ') : '');
 
-        if (data.game_over) {
-            let endMessage = data.win ? `Congratulations! You guessed the word: ${data.word}` : `You lost! The correct word was: ${data.word}`;
-            $('#messageDisplay').text(endMessage + '\n\nPress any key to play again.');
-            isGameOver = true;
+            if (data.game_over) {
+                let endMessage = data.win ? `Congratulations! You guessed the word: ${data.word}` : `You lost! The correct word was: ${data.word}`;
+                $('#messageDisplay').text(endMessage + '\n\nPress any key to play again.');
+                isGameOver = true;
+            }
         }
-    }
 
-    function makeGuess() {
-        const guess = $('input[name="guess"]').val();
-        $.ajax({
-            url: '/guess',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({guess: guess}),
-            success: function (data) {
+        function makeGuess() {
+            const guess = $('input[name="guess"]').val();
+            $.ajax({
+                url: '/guess',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({guess: guess}),
+                success: function (data) {
+                    updateUI(data);
+                }
+            });
+            $('input[name="guess"]').val('').focus();
+        }
+
+        function restartGame() {
+            $.post('/restart', function (data) {
                 updateUI(data);
-            }
-        });
-        $('input[name="guess"]').val('').focus();
-    }
-
-    function restartGame() {
-        $.post('/restart', function (data) {
-            updateUI(data);
-            isGameOver = false;
-        });
-    }
-
-    $(document).ready(function () {
-        $('#guessForm').submit(function (event) {
-            event.preventDefault();
-            if (!isGameOver) {
-                makeGuess();
-            } else {
-                restartGame();
-            }
-        });
-        $(document).click(function () {
-                $('input[name="guess"]').focus();
-        });
-        // Key press event for restarting the game
-        $(document).on('keypress', function () {
-            if (isGameOver) {
-                restartGame();
-            }
-        });
-
-        restartGame(); // Start a new game when the page loads
-    });
-</script>
-
-<style>
-    body {
-        background-color: #f0f0f0;
-        margin: 0;
-        padding: 0;
-        font-family: 'Courier New', Courier, monospace;
-    }
-
-    .terminal {
-        background-color: black;
-        color: #33ff33;
-        padding: 20px;
-        width: auto;
-        margin: 0;
-        border: none;
-        width: 550px;
-        height: 350px;
-    }
-
-    input[type="text"] {
-        background-color: black;
-        /* Match terminal background */
-        color: #33ff33;
-        /* Match terminal text color */
-        border: none;
-        /* Remove border */
-        outline: none;
-        /* Remove focus outline */
-        width: 100%;
-        /* Full width */
-        margin-bottom: 10px;
-        /* Space below the input */
-        padding: 0;
-        /* No padding */
-        font-family: 'Courier New', Courier, monospace;
-        /* Match terminal font */
-    }
-
-    /* Custom blinking cursor */
-    input[type="text"]::placeholder {
-        color: transparent;
-        /* Hide placeholder text */
-    }
-
-    input[type="text"]:focus {
-        caret-color: #33ff33;
-        /* Green blinking cursor */
-    }
-
-    /* Ensure the cursor is visible when the input is not focused */
-    input[type="text"]:not(:focus)::after {
-        content: '|';
-        animation: blink 1s step-start 0s infinite;
-        color: #33ff33;
-        font-weight: bold;
-    }
-
-    /* Blinking animation */
-    @keyframes blink {
-        50% {
-            color: transparent;
+                isGameOver = false;
+            });
         }
-    }
 
-    h1,
-    pre,
-    p,
-    form {
-        margin: 0 0 10px 0;
-    }
+        $(document).ready(function () {
+            $('#guessForm').submit(function (event) {
+                event.preventDefault();
+                if (!isGameOver) {
+                    makeGuess();
+                } else {
+                    restartGame();
+                }
+            });
+            $(document).click(function () {
+                $('input[name="guess"]').focus();
+            });
+            // Key press event for restarting the game
+            $(document).on('keypress', function () {
+                if (isGameOver) {
+                    restartGame();
+                }
+            });
 
-    input[type="submit"]:hover {
-        background-color: #222;
-    }
+            restartGame(); // Start a new game when the page loads
+        });
+    </script>
 
-    pre {
-        white-space: pre-wrap;
-        word-wrap: break-word;
-    }
-</style>
+    <style>
+        body {
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            jusify-content: center;
+        }
+
+        .terminal {
+            background-color: black;
+            color: #33ff33;
+            padding: 20px;
+            width: auto;
+            margin: 0;
+            border: none;
+            width: 550px;
+            height: 350px;
+            margin: 0 auto;
+        }
+
+        input[type="text"] {
+            background-color: black;
+            /* Match terminal background */
+            color: #33ff33;
+            /* Match terminal text color */
+            border: none;
+            /* Remove border */
+            outline: none;
+            /* Remove focus outline */
+            width: 100%;
+            /* Full width */
+            margin-bottom: 10px;
+            /* Space below the input */
+            padding: 0;
+            /* No padding */
+            font-family: 'Courier New', Courier, monospace;
+            /* Match terminal font */
+        }
+
+        /* Custom blinking cursor */
+        input[type="text"]::placeholder {
+            color: transparent;
+            /* Hide placeholder text */
+        }
+
+        input[type="text"]:focus {
+            caret-color: #33ff33;
+            /* Green blinking cursor */
+        }
+
+        /* Ensure the cursor is visible when the input is not focused */
+        input[type="text"]:not(:focus)::after {
+            content: '|';
+            animation: blink 1s step-start 0s infinite;
+            color: #33ff33;
+            font-weight: bold;
+        }
+
+        /* Blinking animation */
+        @keyframes blink {
+            50% {
+                color: transparent;
+            }
+        }
+
+        h1,
+        pre,
+        p,
+        form {
+            margin: 0 0 10px 0;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #222;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
 
 </body>
+
 </html>

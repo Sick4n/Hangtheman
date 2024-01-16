@@ -3,6 +3,8 @@
 
 Welcome to the Hangman Application, a web-based game designed to provide a fun and interactive way to play the classic game of Hangman. This application is built using Flask, a Python web framework, and is deployed on Render for easy accessibility. The game allows players to guess letters or the word itself, with a visual representation of the hangman as the game progresses.
 
+![New Game](/images/new.png)
+
 ## Contents
 
 * Introduction
@@ -20,6 +22,7 @@ Welcome to the Hangman Application, a web-based game designed to provide a fun a
 * Guess Tracking: Keeps track of guessed letters and words.
 * Game Over Indication: Informs the player when the game is over, displaying a win or lose message.
 * New Game Option: Allows players to easily start a new game.
+![Game lost](/images/lose.png)
 * Keyboard Accessibility: Supports keyboard input for guessing letters and words.
 
 ## Technologies Used
@@ -37,6 +40,8 @@ Welcome to the Hangman Application, a web-based game designed to provide a fun a
 * The hangman and guessed letters/words will update based on your input.
 * The game ends either when you guess the word correctly or run out of lives.
 * Press any key or click the screen to start a new game.
+
+![Game lost](/images/lose.png)
 
 ## Testing
 
@@ -61,6 +66,17 @@ The Hangman Application is deployed on Render, following these steps:
 * Leaderboard: Implementing a leaderboard to track high scores and encourage competition.
 * Word Categories: Adding different categories of words for players to choose from.
 * Multiplayer Mode: Enabling multiple players to play against each other.
+
+## Dificulties/Bugs
+
+### Transition from Hidden Inputs to Flask Session Variables:
+Initially, the game's state was managed using hidden HTML inputs. This method posed security concerns and limited control over game state management. The transition to Flask session variables offered a more secure and robust solution, streamlining state management across different game stages.
+
+### Input Validation Errors:
+The game initially accepted non-alphabetic characters and multiple letters as valid guesses, leading to inconsistent gameplay. This was rectified by implementing stricter input validation checks in the Flask backend, ensuring that only single alphabetic characters were accepted as valid guesses.
+
+### Incorrect Hangman Stage Rendering:
+Initially, there was an issue where the hangman's visual stage wasn't updating correctly according to the number of incorrect guesses. This was due to a mismatch between the guess count and the corresponding hangman stage in the display_hangman function. The logic had to be carefully adjusted to ensure that each incorrect guess accurately reflected the correct stage of the hangman.
 
 ## Acknowledgements
 
