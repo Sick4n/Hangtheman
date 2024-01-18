@@ -9,7 +9,7 @@ words = [word.strip().upper() for word in words]
 
 def display_hangman(tries):
     stages = [
-     '''
+        '''
            --------
            |      |
            |      O
@@ -25,7 +25,7 @@ def display_hangman(tries):
            |      O
            |     \\|/
            |      |
-           |     / 
+           |     /
            -
         ''',
         # head, torso, and both arms
@@ -35,7 +35,7 @@ def display_hangman(tries):
            |      O
            |     \\|/
            |      |
-           |      
+           |
            -
         ''',
         # head, torso, and one arm
@@ -45,7 +45,7 @@ def display_hangman(tries):
            |      O
            |     \\|
            |      |
-           |     
+           |
            -
         ''',
         # head and torso
@@ -55,7 +55,7 @@ def display_hangman(tries):
            |      O
            |      |
            |      |
-           |     
+           |
            -
         ''',
         # head
@@ -63,23 +63,24 @@ def display_hangman(tries):
            --------
            |      |
            |      O
-           |    
-           |      
-           |     
+           |
+           |
+           |
            -
         ''',
         # initial empty state
         '''
            --------
            |      |
-           |      
-           |    
-           |      
-           |     
+           |
+           |
+           |
+           |
            -
         '''
     ]
     return stages[tries]
+
 
 def get_display_word(word, guessed_letters):
     display_word = ""
@@ -90,12 +91,15 @@ def get_display_word(word, guessed_letters):
             display_word += "_ "
     return display_word.strip()
 
+
 def has_guessed_all_letters(word, guessed_letters):
     return all(letter in guessed_letters for letter in word)
+
 
 @app.route("/")
 def index():
     return render_template("index.html")
+
 
 @app.route("/guess", methods=["POST"])
 def guess():
@@ -124,7 +128,9 @@ def guess():
         else:
             session['guessed_words'].append(guess)
             if guess == session['word']:
-                return jsonify({"game_over": True, "win": True, "word": session['word'], "message": "Congratulations! You guessed the word!"})
+                return jsonify({"game_over": True, "win": True, "word":
+                                session['word'], "message":
+                                "Congratulations! You guessed the word!"})
             else:
                 message = f"Sorry, {guess} is not the word."
                 session['lives'] -= 1
@@ -132,13 +138,20 @@ def guess():
     else:
         message = "Invalid guess. Try again."
 
-    session['display_word'] = get_display_word(session['word'], session['guessed_letters'])
+    session['display_word'] = get_display_word(session['word'],
+                                               session['guessed_letters'])
     if has_guessed_all_letters(session['word'], session['guessed_letters']):
-        return jsonify({"game_over": True, "win": True, "word": session['word'], "message": "Congratulations! You guessed the word!", "display_word": session['display_word']})
+        return jsonify({"game_over": True, "win": True,
+                        "word": session['word'],
+                        "message": "Congratulations! You guessed the word!",
+                        "display_word": session['display_word']})
 
     if session['lives'] <= 0:
         hangman = display_hangman(session['lives'])
-        return jsonify({"game_over": True, "win": False, "word": session['word'], "message": "You have run out of lives!", "hangman": hangman})
+        return jsonify({"game_over": True, "win": False,
+                        "word": session['word'],
+                        "message": "You have run out of lives!",
+                        "hangman": hangman})
 
     hangman = display_hangman(session['lives'])
 
@@ -158,14 +171,16 @@ def restart():
     session['guessed_letters'] = []
     session['guessed_words'] = []
     session['lives'] = 6
-    session['display_word'] = get_display_word(session['word'], session['guessed_letters'])
+    session['display_word'] = get_display_word(session['word'],
+                                               session['guessed_letters'])
     return jsonify({
         "message": "New game started! Guess a letter or the whole word.",
         "guessed_letters": session['guessed_letters'],
         "guessed_words": session["guessed_words"],
-"display_word": session['display_word'],
-"hangman": display_hangman(session['lives'])
-})
+        "display_word": session['display_word'],
+        "hangman": display_hangman(session['lives'])
+        })
+
 
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=False)
